@@ -1,0 +1,75 @@
+{
+  "schema_version": "1.0",
+  "tool_version": "0.1.0",
+  "taken_at": "2026-11-22T08:00:00Z",
+  "cluster": {
+    "context": "staging-cluster",
+    "server": "https://k8s.staging.example.com",
+    "namespaces": ["shop"],
+    "selector": null
+  },
+  "workloads": [
+    {
+      "namespace": "shop",
+      "kind": "Deployment",
+      "name": "checkout-api",
+      "desired": 3,
+      "available": 3,
+      "restarts_total": 0
+    },
+    {
+      "namespace": "shop",
+      "kind": "Deployment",
+      "name": "cart-worker",
+      "desired": 2,
+      "available": 2,
+      "restarts_total": 0
+    }
+  ],
+  "pods": [
+    {
+      "namespace": "shop",
+      "name": "checkout-api-79f8b449b-11111",
+      "owner_kind": "Deployment",
+      "owner_name": "checkout-api",
+      "phase": "Running",
+      "ready": true,
+      "restarts": 0,
+      "waiting_reason": null,
+      "last_terminated_reason": null,
+      "age_seconds": 3600
+    },
+    {
+      "namespace": "shop",
+      "name": "cart-worker-556bc994d-22222",
+      "owner_kind": "Deployment",
+      "owner_name": "cart-worker",
+      "phase": "Running",
+      "ready": true,
+      "restarts": 0,
+      "waiting_reason": null,
+      "last_terminated_reason": null,
+      "age_seconds": 3600
+    }
+  ],
+  "nodes": [
+    {
+      "name": "ip-10-0-1-10.ec2.internal",
+      "ready": true,
+      "pressure": []
+    }
+  ],
+  "events": [],
+  "http_checks": [
+    {
+      "name": "checkout-health",
+      "url": "https://api.shop.example.com/healthz",
+      "samples": 5,
+      "ok_count": 5,
+      "status_mode": 200,
+      "p50_ms": 42.5,
+      "error": null
+    }
+  ],
+  "issues": []
+}

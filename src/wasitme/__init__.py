@@ -1,0 +1,2 @@
+"""wasitme: deploy blame attribution engine."""
+__version__ = "0.1.0"

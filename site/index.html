@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>wasitme — Did your deploy break it, or was it already broken?</title>
+  <meta name="description" content="Open-source Python CLI for Kubernetes post-deploy blame attribution. Classifies issues into BROKE AFTER YOUR CHANGE, ALREADY BROKEN, and FIXED.">
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="navbar">
+    <div class="container nav-content">
+      <div class="brand">
+        <img src="assets/logo.svg" alt="wasitme logo" width="32" height="32" class="nav-logo">
+        <span class="brand-text">wasitme</span>
+      </div>
+      <nav class="nav-links">
+        <a href="#how-it-works">How it Works</a>
+        <a href="#comparison">Comparison</a>
+        <a href="#limitations">Limitations</a>
+        <a href="https://github.com/nithink/wasitme" target="_blank" rel="noopener" class="btn-github">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container">
+        <div class="badge">Open Source MIT • Python CLI</div>
+        <h1 class="hero-title">Did your change break this,<br><span class="highlight">or was it already broken?</span></h1>
+        <p class="hero-sub">
+          Instant post-deploy blame attribution for Kubernetes. Takes a snapshot before your change, diffs live cluster state after, and isolates true regressions from background noise.
+        </p>
+
+        <div class="install-box">
+          <code>pipx install wasitme</code>
+          <button id="copy-btn" aria-label="Copy install command">Copy</button>
+        </div>
+
+        <!-- Terminal Replay Demo -->
+        <div class="terminal-window" aria-label="Terminal output demonstration">
+          <div class="terminal-bar">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+            <span class="terminal-title">wasitme demo --scenario crashloop</span>
+          </div>
+          <pre id="terminal-content" class="terminal-body">
+<span class="prompt">$</span> wasitme diff --wait 15s
+
+<span class="verdict-fail">[FAIL] VERDICT: REGRESSION DETECTED (1 regression, 2 pre-existing, 1 fixed)</span>
+<span class="dim">Baseline: 2026-11-22T08:00:00Z | Current: 2026-11-22T08:15:00Z</span>
+
+<span class="c-red">🔴 BROKE AFTER YOUR CHANGE (1)</span>
+  • <b>POD_CRASHLOOP</b> [ERROR] (shop:Deployment:checkout-api)
+    Pod owned by Deployment/checkout-api is in CrashLoopBackOff. [ExitCode: 137]
+
+<span class="c-yellow">🟡 ALREADY BROKEN (2)</span>
+  • <b>NODE_PRESSURE</b> (PRESSURE:DiskPressure:ip-10-0-1-10.ec2.internal)
+    Node 'ip-10-0-1-10.ec2.internal' is experiencing DiskPressure.
+  • <b>WARNING_EVENT</b> (shop:FailedMount:Pod/billing-cron-78f9)
+    MountVolume.SetUp failed for volume "data-vol"
+
+<span class="c-green">🟢 FIXED (1)</span>
+  • <b>WORKLOAD_UNAVAILABLE</b> (shop:Deployment:frontend-web)
+    Workload Deployment/frontend-web available replicas restored: 3/3.
+          </pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Three Buckets Section -->
+    <section id="how-it-works" class="section">
+      <div class="container">
+        <h2 class="section-title">The Three Attribution Buckets</h2>
+        <div class="grid-3">
+          <div class="card card-red">
+            <div class="card-icon">🔴</div>
+            <h3>Broke After Your Change</h3>
+            <p>New pod crashloops, image pull failures, surge in restart counts (&ge; 3), or degraded HTTP endpoints. Fails CI with exit code 1.</p>
+          </div>
+          <div class="card card-yellow">
+            <div class="card-icon">🟡</div>
+            <h3>Already Broken</h3>
+            <p>Pre-existing failures present before you touched the cluster that did not worsen. Eliminates post-deploy blame and false alarms.</p>
+          </div>
+          <div class="card card-green">
+            <div class="card-icon">🟢</div>
+            <h3>Fixed</h3>
+            <p>Baseline issues that your deployment successfully resolved. Gives clear proof that your bugfix achieved its goal.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Comparison Section -->
+    <section id="comparison" class="section bg-alt">
+      <div class="container">
+        <h2 class="section-title">How wasitme Differs</h2>
+        <div class="table-wrap">
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>Capability</th>
+                <th>wasitme</th>
+                <th>kubectl-snapshot</th>
+                <th>Prometheus / Datadog</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Primary Purpose</strong></td>
+                <td><span class="tag tag-green">Deploy Blame Attribution</span></td>
+                <td>Forensics state dump</td>
+                <td>Continuous metric monitoring</td>
+              </tr>
+              <tr>
+                <td><strong>Rolling Update Awareness</strong></td>
+                <td><span class="tag tag-green">Yes (Keys on Workload Owner)</span></td>
+                <td>No (Raw Pod Names)</td>
+                <td>Aggregated metrics only</td>
+              </tr>
+              <tr>
+                <td><strong>Cluster Footprint</strong></td>
+                <td><span class="tag tag-green">Zero (Client CLI only)</span></td>
+                <td>Zero (Client CLI only)</td>
+                <td>Heavy (Agents, CRDs, Storage)</td>
+              </tr>
+              <tr>
+                <td><strong>Synthetic HTTP Probing</strong></td>
+                <td><span class="tag tag-green">Built-in (stdlib urllib)</span></td>
+                <td>None</td>
+                <td>Separate probe stack</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Limitations Section -->
+    <section id="limitations" class="section">
+      <div class="container">
+        <h2 class="section-title">Honest Limitations</h2>
+        <ul class="limitations-list">
+          <li><strong>Read-Only Scope:</strong> wasitme inspects Kubernetes object status and events; it does not parse container application logs or kernel eBPF probes.</li>
+          <li><strong>Rollout Settling:</strong> Active rollouts should use <code>--wait</code> or <code>--rollout</code> to allow pods to settle before capturing the post-deploy state.</li>
+          <li><strong>Platform:</strong> Linux and macOS (Python 3.11+). Windows is unsupported in v0.1.0.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-content">
+      <p>MIT License © Nithin K. Built with pride for SREs and platform engineers.</p>
+      <div class="footer-links">
+        <a href="https://pypi.org/project/wasitme" target="_blank" rel="noopener">PyPI</a>
+        <a href="https://github.com/nithink/wasitme" target="_blank" rel="noopener">GitHub</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

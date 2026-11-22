@@ -1,0 +1,55 @@
+{
+  "schema_version": "1.0",
+  "tool_version": "0.1.0",
+  "taken_at": "2026-11-22T08:00:00Z",
+  "cluster": {
+    "context": "staging-cluster",
+    "server": "https://k8s.staging.example.com",
+    "namespaces": ["shop"],
+    "selector": null
+  },
+  "workloads": [
+    {
+      "namespace": "shop",
+      "kind": "Deployment",
+      "name": "cart-worker",
+      "desired": 2,
+      "available": 2,
+      "restarts_total": 42
+    }
+  ],
+  "pods": [
+    {
+      "namespace": "shop",
+      "name": "cart-worker-556bc994d-22222",
+      "owner_kind": "Deployment",
+      "owner_name": "cart-worker",
+      "phase": "Running",
+      "ready": true,
+      "restarts": 42,
+      "waiting_reason": null,
+      "last_terminated_reason": null,
+      "age_seconds": 86400
+    }
+  ],
+  "nodes": [
+    {
+      "name": "ip-10-0-1-10.ec2.internal",
+      "ready": true,
+      "pressure": ["DiskPressure"]
+    }
+  ],
+  "events": [],
+  "http_checks": [],
+  "issues": [
+    {
+      "key": "PRESSURE:DiskPressure:ip-10-0-1-10.ec2.internal",
+      "kind": "NODE_PRESSURE",
+      "severity": "warning",
+      "detail": "Node 'ip-10-0-1-10.ec2.internal' is experiencing DiskPressure.",
+      "metrics": {
+        "pressure_type": "DiskPressure"
+      }
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: uv pip install --system -e ".[dev]"
+
+      - name: Lint with ruff
+        run: ruff check src tests
+
+      - name: Typecheck with mypy
+        run: mypy src
+
+      - name: Run test suite with coverage
+        run: |
+          pytest --cov=wasitme --cov-fail-under=85 --cov-report=term-missing
+
+      - name: Verify differ.py coverage >= 95%
+        run: |
+          pytest tests/test_differ.py tests/test_edge_cases.py --cov=wasitme.differ --cov-fail-under=95
+
+  integration-kind:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Set up Python 3.11
+        run: uv python install 3.11
+
+      - name: Install wasitme
+        run: uv pip install --system -e .
+
+      - name: Create local kind cluster
+        uses: helm/kind-action@v1.10.0
+        with:
+          cluster_name: wasitme-ci
+
+      - name: Run baseline snapshot on kind
+        run: wasitme snapshot -n default -o /tmp/base.json
+
+      - name: Deploy healthy app
+        run: |
+          kubectl create deployment nginx-ci --image=nginx:alpine -n default
+          kubectl rollout status deployment/nginx-ci -n default --timeout=60s
+
+      - name: Diff cluster state (expect clean)
+        run: wasitme diff --baseline /tmp/base.json --fail-on regression

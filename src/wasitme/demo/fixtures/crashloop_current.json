@@ -1,0 +1,89 @@
+{
+  "schema_version": "1.0",
+  "tool_version": "0.1.0",
+  "taken_at": "2026-11-22T08:15:00Z",
+  "cluster": {
+    "context": "staging-cluster",
+    "server": "https://k8s.staging.example.com",
+    "namespaces": ["shop"],
+    "selector": null
+  },
+  "workloads": [
+    {
+      "namespace": "shop",
+      "kind": "Deployment",
+      "name": "checkout-api",
+      "desired": 3,
+      "available": 1,
+      "restarts_total": 5
+    }
+  ],
+  "pods": [
+    {
+      "namespace": "shop",
+      "name": "checkout-api-88a7c223c-99999",
+      "owner_kind": "Deployment",
+      "owner_name": "checkout-api",
+      "phase": "Running",
+      "ready": false,
+      "restarts": 5,
+      "waiting_reason": "CrashLoopBackOff",
+      "last_terminated_reason": "Error",
+      "age_seconds": 120
+    }
+  ],
+  "nodes": [
+    {
+      "name": "ip-10-0-1-10.ec2.internal",
+      "ready": true,
+      "pressure": []
+    }
+  ],
+  "events": [],
+  "http_checks": [
+    {
+      "name": "checkout-health",
+      "url": "https://api.shop.example.com/healthz",
+      "samples": 5,
+      "ok_count": 0,
+      "status_mode": 503,
+      "p50_ms": 1150.0,
+      "error": null
+    }
+  ],
+  "issues": [
+    {
+      "key": "POD_CRASHLOOP:shop:Deployment:checkout-api",
+      "kind": "POD_CRASHLOOP",
+      "severity": "error",
+      "detail": "Pod owned by Deployment/checkout-api is in CrashLoopBackOff.",
+      "metrics": {
+        "restarts": 5,
+        "exit_code": 1,
+        "waiting_reason": "CrashLoopBackOff"
+      }
+    },
+    {
+      "key": "WORKLOAD_UNAVAILABLE:shop:Deployment:checkout-api",
+      "kind": "WORKLOAD_UNAVAILABLE",
+      "severity": "error",
+      "detail": "Workload Deployment/checkout-api in shop has 1/3 available replicas.",
+      "metrics": {
+        "desired": 3,
+        "available": 1,
+        "unavailable": 2
+      }
+    },
+    {
+      "key": "HTTP:checkout-health",
+      "kind": "HTTP_DOWN",
+      "severity": "error",
+      "detail": "HTTP endpoint 'checkout-health' is completely DOWN. Error: HTTP 503",
+      "metrics": {
+        "status_mode": 503,
+        "ok_count": 0,
+        "p50_ms": 1150.0
+      }
+    }
+  ]
+}
